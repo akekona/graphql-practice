@@ -71,18 +71,41 @@ const schema = buildSchema(`
   input typeInput {
     name: String
   }
-
   input pokemonEdit {
     name: String
     editField: String
     editValue: String
   }
-
+  input typeEdit {
+    name: String
+    editName: String
+  }
+  input attackEdit {
+    fastOrSpecial: String
+    name: String
+    editField: String
+    editValue: String
+  }
+  input pokemonRemove {
+    name: String
+  }
+  input typeRemove {
+    name: String
+  }
+  input attackRemove {
+    fastOrSpecial: String
+    name: String
+  }
   type Mutation {
     addPokemon(input: pokemonInput): Pokemon
     addAttack(input: attackInput): Attack
     addType(input: typeInput): [String]
     editPokemon(input: pokemonEdit): Pokemon
+    editTypes(input: typeEdit): [String]
+    editAttack(input: attackEdit): Attack
+    removePokemon(input: pokemonRemove): [Pokemon]
+    removeTypes(input: typeRemove): [String]
+    removeAttack(input: attackRemove) : AttackType
   }
 `);
 
@@ -105,7 +128,6 @@ const root = {
     return data.attacks;
   },
   Attack: (request) => {
-    // console.log(data.pokemon[0].types);
     return data.attacks[request.type];
   },
   PokemonByType: (request) => {
@@ -144,9 +166,7 @@ const root = {
       type: request.input.type,
       damage: request.input.damage,
     };
-    console.log(newAttack);
     data.attacks[request.input.fastOrSpecial].push(newAttack);
-    console.log(data.attacks[request.input.fastOrSpecial]);
     return newAttack;
   },
   addType: (request) => {
@@ -157,9 +177,52 @@ const root = {
   editPokemon: (request) => {
     for (const poke of data.pokemon) {
       if (poke.name === request.input.name) {
-        console.log(poke[request.input.editField]);
         poke[request.input.editField] = request.input.editValue;
         return poke;
+      }
+    }
+  },
+  editTypes: (request) => {
+    for (const type in data.types) {
+      if (data.types[type] === request.input.name) {
+        data.types[type] = request.input.editName;
+        return data.types;
+      }
+    }
+  },
+  editAttack: (request) => {
+    for (const attack of data.attacks[request.input.fastOrSpecial]) {
+      if (attack.name === request.input.name) {
+        attack[request.input.editField] = request.input.editValue;
+        return attack;
+      }
+    }
+  },
+  removePokemon: (request) => {
+    for (const poke of data.pokemon) {
+      if (poke.name === request.input.name) {
+        data.pokemon.splice(data.pokemon.indexOf(poke), 1);
+        return data.pokemon;
+      }
+    }
+  },
+  removeTypes: (request) => {
+    for (const type in data.types) {
+      if (data.types[type] === request.input.name) {
+        data.types.splice(type, 1);
+        return data.types;
+      }
+    }
+  },
+  removeAttack: (request) => {
+    const changeAry = data.attacks[request.input.fastOrSpecial];
+    for (const attack of changeAry) {
+      if (attack.name === request.input.name) {
+        data.attacks[request.input.fastOrSpecial].splice(
+          changeAry.indexOf(attack),
+          1
+        );
+        return data.attacks;
       }
     }
   },
